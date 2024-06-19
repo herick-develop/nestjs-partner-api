@@ -1,0 +1,49 @@
+@eventId = {{ createEvent.response.body.id }}
+
+### listAll
+GET http://localhost:3000/events
+
+### listOne
+GET http://localhost:3000/events/{{eventId}}
+
+### update
+PATCH http://localhost:3000/events/{{eventId}}
+Content-Type: application/json
+
+{
+    "name": "New Event",
+    "description": "I'm a description",
+    "date": "2017-01-01T00:00:00",
+    "price": 200
+}
+
+### delete
+DELETE http://localhost:3000/events/{{eventId}}
+###
+
+# @name createEvent
+POST http://localhost:3000/events
+Content-Type: application/json
+
+{
+    "name": "New Event",
+    "description": "I'm a description",
+    "date": "2017-01-01T00:00:00",
+    "price": 200
+}
+###
+
+######################################################
+### create
+POST http://localhost:3000/events/{{eventId}}/spots
+Content-Type: application/json
+
+{
+    "name": "A3"
+}
+
+### listAll
+GET http://localhost:3000/events/{{eventId}}/spots
+
+### Delete
+DELETE http://localhost:3000/events/{{eventId}}
