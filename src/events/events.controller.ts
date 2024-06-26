@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { EventsService } from './events.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
+import { ReserveSpotDto } from 'src/spot/dto/reserve-spot.dto';
 
 @Controller('events')
 export class EventsController {
@@ -31,4 +32,10 @@ export class EventsController {
   remove(@Param('id') id: string) {
     return this.eventsService.remove(id);
   }
+
+  @Post(':id/reserve')
+  reserveSpots(@Body() dto: ReserveSpotDto, @Param('id') eventId: string) {
+    return this.eventsService.reserveSpot({ ...dto, eventId });
+  }
+
 }

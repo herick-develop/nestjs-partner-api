@@ -1,4 +1,7 @@
+
 @eventId = {{ createEvent.response.body.id }}
+###
+@spotName = {{ createSpot.response.body.name }}
 
 ### listAll
 GET http://localhost:3000/events
@@ -34,12 +37,12 @@ Content-Type: application/json
 ###
 
 ######################################################
-### create
+# @name createSpot
 POST http://localhost:3000/events/{{eventId}}/spots
 Content-Type: application/json
 
 {
-    "name": "A3"
+    "name": "A2"
 }
 
 ### listAll
@@ -47,3 +50,13 @@ GET http://localhost:3000/events/{{eventId}}/spots
 
 ### Delete
 DELETE http://localhost:3000/events/{{eventId}}
+
+### reserve spot
+POST http://localhost:3000/events/{{eventId}}/reserve
+Content-Type: application/json
+
+{
+    "spots": ["{{spotName}}"],
+    "ticket_kind": "full",
+    "email": "teste@teste.com"
+}

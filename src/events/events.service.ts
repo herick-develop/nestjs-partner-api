@@ -3,6 +3,7 @@ import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ReserveSpotDto } from 'src/spot/dto/reserve-spot.dto';
+import { Prisma, SpotStatus, TicketStatus } from '@prisma/client';
 
 type CreateReserveInput = ReserveSpotDto & { eventId: string };
 
@@ -61,7 +62,58 @@ export class EventsService {
       const notFoundSpotsName = dto.spots.filter(
         (spotName) => !foundSpotsName.includes(spotName),
       );
+      console.log(notFoundSpotsName)
       throw new Error(`Spots ${notFoundSpotsName.join(', ')} not found`);
+    }
+
+    try {
+      const tickets = await this.prismaService.$transaction( async ( prisma ) => {
+        await prisma.reservationHistory.createMany({
+          data: spots.map( (spot) => ({
+            spotId: spot.id,
+            ticketKind: dto.ticket_kind,
+            email: dto.email,
+            status: TicketStatus.reserved
+          }) )
+        })
+    
+        await prisma.spot.updateMany({
+          where: {
+            id: {
+              in: spots.map( (spot) => spot.id ),
+            },
+          },
+          data: {
+            status: SpotStatus.reserved,
+          }
+        })
+    
+        const tickets = await Promise.all(
+          spots.map( (spot) =>
+            prisma.ticket.create({
+              data: {
+                spotId: spot.id,
+                ticketKind: dto.ticket_kind,
+                email: dto.email,
+              }
+            })
+          )
+        )
+    
+        return tickets;
+      },
+        { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted },
+      );
+      return tickets;
+    } catch(error) {
+      if(error instanceof Prisma.PrismaClientKnownRequestError) {
+        switch (error.code) {
+          case 'P2002':
+          case 'P2034':
+            throw new Error('Some spots are already reserved');
+        }
+      }
+      throw error;
     }
 
   }
